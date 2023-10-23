@@ -1,0 +1,16 @@
+cabal-version:       2.4
+
+name:                curlinator
+version:             0.1.0.0
+author:              John Haynes
+maintainer:          john.andrew.haynes@gmail.com
+build-type:          Simple
+
+executable curlinator
+  main-is:             Main.hs
+  other-modules:       Class, CurlWriter, HttpClient, Types
+  ghc-Options:         -Wall -O2
+  build-depends:       base, http-client, http-client-tls, http-types, string-interpolate, transformers
+  default-extensions:  GeneralizedNewtypeDeriving, InstanceSigs, QuasiQuotes, ScopedTypeVariables
+  hs-source-dirs:      src
+  default-language:    Haskell2010
