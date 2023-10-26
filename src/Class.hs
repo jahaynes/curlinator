@@ -6,7 +6,13 @@ class Output m where
     output :: Var -> m ()
 
 class Get m where
-    getRequest :: String -> m Var
+    getJson :: String -> m Var
 
 class Post m where
-    postRequest :: String -> m Var
+    postJson :: String -> m Var
+
+class Json m where
+
+    dot :: String -> Var -> m Var
+
+    arr :: Var -> m Var
