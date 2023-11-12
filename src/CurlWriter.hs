@@ -1,11 +1,12 @@
 module CurlWriter (runCurlWriter) where
 
-import Class    (Get (..), Json (..), Output (..))
+import Class    (Get (..), Json (..), Output (..), Post (..))
 import Types    (Var (..))
 
 import Control.Monad.Trans.Class      (lift)
 import Control.Monad.Trans.State      (StateT, evalStateT, get, put)
 import Control.Monad.Trans.Writer.CPS (WriterT, execWriterT, tell)
+import Data.Aeson                     (ToJSON, encode)
 import Data.String.Interpolate        (i)
 
 newtype CurlWriter m a =
@@ -19,7 +20,16 @@ instance Monad m => Get (CurlWriter m) where
 getRequest :: Monad m => String -> String -> CurlWriter m Var
 getRequest acceptType url = do
     v <- nextVar
-    emit [i|#{v}=$(curl -H "Accept: #{acceptType}" #{url})\n|]
+    emit [i|#{v}=$(curl -H "Accept: #{acceptType}" #{url} 2>/dev/null)\n|]
+    pure v
+
+instance Monad m => Post (CurlWriter m) where   
+    postJson = postRequest "application/json"
+
+postRequest :: (ToJSON a, Monad m) => String -> String -> a -> CurlWriter m Var
+postRequest acceptType url body = do
+    v <- nextVar
+    emit [i|#{v}=$(curl -X POST -H "Accept: #{acceptType}" -H "Content-Type: #{acceptType}" #{url} -d'#{encode body}' 2>/dev/null)\n|]
     pure v
 
 instance Monad m => Output (CurlWriter m) where
