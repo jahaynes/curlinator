@@ -1,4 +1,4 @@
-module CurlWriter where
+module CurlWriter (runCurlWriter) where
 
 import Class    (Get (..), Json (..), Output (..))
 import Types    (Var (..))
@@ -13,10 +13,14 @@ newtype CurlWriter m a =
                } deriving (Functor, Applicative, Monad)
 
 instance Monad m => Get (CurlWriter m) where
-    getJson url = do
-        v <- nextVar
-        emit [i|#{v}=$(curl -H "Accept: application/json" #{url})\n|]
-        pure v
+    getJson  = getRequest "application/json"
+    getPlain = getRequest "text/plain"
+
+getRequest :: Monad m => String -> String -> CurlWriter m Var
+getRequest acceptType url = do
+    v <- nextVar
+    emit [i|#{v}=$(curl -H "Accept: #{acceptType}" #{url})\n|]
+    pure v
 
 instance Monad m => Output (CurlWriter m) where
 
@@ -43,7 +47,8 @@ nextVar = CurlWriter . lift $ do
     put $ succ v
     pure v
 
-run :: Monad m => CurlWriter m a -> m String
-run p = evalStateT (execWriterT $ do
-                        tell "#!/bin/bash\n\n"
-                        unCurlWriter p) (Var 'A')
+runCurlWriter :: Monad m => CurlWriter m a -> m String
+runCurlWriter program =
+    evalStateT (execWriterT $ do
+                    tell "#!/bin/bash\n\n"
+                    unCurlWriter program) (Var 'A')

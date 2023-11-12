@@ -7,6 +7,7 @@ class Output m where
 
 class Get m where
     getJson :: String -> m Var
+    getPlain :: String -> m Var
 
 class Post m where
     postJson :: String -> m Var
